@@ -1,0 +1,44 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java-library'
+}
+
+version = "0.1.0"
+group = "dev.array21"
+
+task processSource(type: Sync) {
+    from sourceSets.main.java
+    inputs.property 'version', version
+    filter(ReplaceTokens, tokens: [VERSION: version])
+    into "$buildDir/src"
+}
+
+compileJava {
+    source = processSource.outputs
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots" }
+}
+
+dependencies {
+    compileOnly 'dev.array21:dutchycore:0.1.0'
+    compileOnly 'org.spigotmc:spigot-api:1.18-R0.1-SNAPSHOT'
+}
+
+processResources  {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+task ghActions(type: Jar) {
+    description 'GitHub Actions task. Not used for regular development'
+    version = ''
+    archiveClassifier = ''
+    archiveBaseName = 'output'
+
+    from sourceSets.main.output
+
+    destinationDirectory = file("$rootDir/actions")
+}
